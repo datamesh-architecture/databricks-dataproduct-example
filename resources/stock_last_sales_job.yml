@@ -1,0 +1,70 @@
+# The main job for stock_last_sales.
+resources:
+  jobs:
+    stock_last_sales_job:
+      name: stock_last_sales_job
+
+      schedule:
+        # Run every day at midnight
+        quartz_cron_expression: '0 0 0 * * ?'
+        timezone_id: Europe/Amsterdam
+
+      email_notifications:
+        on_failure:
+          - jochen.christ@innoq.com
+
+      tasks:
+        - task_key: create_unity_catalog_table
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/create_unity_catalog_table.ipynb
+          libraries:
+            - pypi:
+                package: datacontract-cli
+
+        - task_key: main_task
+          depends_on:
+            - task_key: create_unity_catalog_table
+          job_cluster_key: job_cluster
+          python_wheel_task:
+            package_name: stock_last_sales
+            entry_point: main
+          libraries:
+            # By default we just include the .whl file generated for the stock_last_sales package.
+            # See https://docs.databricks.com/dev-tools/bundles/library-dependencies.html
+            # for more information on how to add other libraries.
+            - whl: ../dist/*.whl
+
+        - task_key: publish_to_datameshmanager
+          depends_on:
+            - task_key: main_task
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/publish_datamesh_manager.ipynb
+          libraries:
+            - whl: ../dist/*.whl
+            - pypi:
+                package: "requests==2.31.0"
+            - pypi:
+                package: "pyyaml==6.0.1"
+
+        - task_key: datacontract_test_task
+          depends_on:
+            - task_key: publish_to_datameshmanager
+          notebook_task:
+            notebook_path: ../src/datacontract_test.ipynb
+          job_cluster_key: job_cluster
+          libraries:
+            - pypi:
+                package: datacontract-cli
+
+      job_clusters:
+        - job_cluster_key: job_cluster
+          new_cluster:
+            spark_version: 13.3.x-scala2.12
+            node_type_id: i3.xlarge
+            autoscale:
+                min_workers: 1
+                max_workers: 4
+            spark_env_vars:
+                DATAMESH_MANAGER_API_KEY: "{{secrets/datamesh_manager/api_key}}"

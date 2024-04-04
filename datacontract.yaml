@@ -1,0 +1,80 @@
+dataContractSpecification: 0.9.3
+id: urn:datacontract:fulfillment:stock-last-sales
+info:
+  title: Last Sales
+  version: 1.0.0
+  description: |
+    The data model contains all articles that are in stock.
+    For every article the last sale timestamp is defined.
+  owner: fulfillment
+  contact:
+    name: John Doe (Data Product Owner)
+#    url: https://teams.microsoft.com/l/channel/19%3Ad7X0bzOrUrZ-QAGu0nTxlWACe5HOQ-8Joql71A_00000%40thread.tacv2/General?groupId=4d213734-d5a1-4130-8024-00000000&tenantId=b000e7de-5c4d-41a2-9e67-00000000
+servers:
+  development:
+    type: databricks
+    host: dbc-5829e67d-6e9e.cloud.databricks.com
+    catalog: acme
+    schema: stock_last_sales
+terms:
+  usage: >
+    Data can be used for reports, analytics and machine learning use cases.
+    Order may be linked and joined by other tables
+  limitations: >
+    Not suitable for real-time use cases.
+  billing: free
+  noticePeriod: P3M
+models:
+  articles:
+    description: One record per artcle that is currently in stock
+    type: table
+    fields:
+      sku:
+        description: The article number (stock keeping unit)
+        type: string
+        primary: true
+        unique: true
+        required: true
+        pattern: ^[A-Za-z0-9]{8,14}$
+        minLength: 8
+        maxLength: 14
+        example: "96385074"
+      quantity:
+        description: The total amount of articles that are currently in stock in all warehouses.
+        type: long
+        minimum: 1
+        required: true
+      last_sale_timestamp:
+        description: The business timestamp in UTC when there was the last sale for this article. Null means that the article was never sold.
+        type: timestamp
+      processing_timestamp:
+        description: The technical timestamp in UTC when this row was updated
+        type: timestamp
+        required: true
+servicelevels:
+  availability:
+    percentage: 99.9%
+  retention:
+    period: 1 year
+  freshness:
+    threshold: 25 hours
+    timestampField: articles.processing_timestamp
+examples:
+  - type: csv
+    data: |
+      sku,quantity,last_sale_timestamp,processing_timestamp
+      1234567890123,5,2024-02-25T16:16:30.171798,2024-03-25T16:16:30.171807
+      2345678901234,10,,2024-03-25T15:16:30.171811
+      3456789012345,15,2024-03-02T12:16:30.171814,2024-03-25T14:16:30.171816
+      4567890123456,20,,2024-03-25T13:16:30.171817
+      5678901234567,25,2024-03-08T08:16:30.171819,2024-03-25T12:16:30.171821
+      6789012345678,30,,2024-03-25T11:16:30.171823
+      7890123456789,35,2024-03-14T04:16:30.171824,2024-03-25T10:16:30.171826
+      8901234567890,40,,2024-03-25T09:16:30.171830
+      9012345678901,45,2024-03-20T00:16:30.171833,2024-03-25T08:16:30.171835
+      0123456789012,50,,2024-03-25T07:16:30.171837
+quality:
+  type: SodaCL
+  specification:
+    checks for articles:
+      - row_count > 1000

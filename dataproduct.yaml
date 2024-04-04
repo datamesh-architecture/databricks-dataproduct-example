@@ -1,0 +1,23 @@
+dataProductSpecification: 0.0.1
+id: urn:dataproduct:fulfillment:stock-last-sales
+info:
+  title: Stock Last Sales
+  owner: fulfillment
+  status: active
+  description: |
+    The data model contains all articles that are in stock.
+    For every article the last sale timestamp is defined.
+  archetype: source-aligned
+  maturity: managed
+inputPorts: []
+outputPorts:
+  - id: stock-last-sales
+    dataContractId: urn:datacontract:fulfillment:stock-last-sales
+    name: stock-last-sales
+    status: active
+    description: The data is available as a Unity Catalog Table
+    type: databricks
+    server:
+      host: dbc-5829e67d-6e9e.cloud.databricks.com
+      catalog: acme
+      schema: stock_last_sales
