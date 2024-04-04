@@ -1,6 +1,8 @@
 name: "Deploy Databricks Assets Bundle"
 on:
   workflow_dispatch:
+  push:
+    branches: [ "main" ]
 
 jobs:
   test:
