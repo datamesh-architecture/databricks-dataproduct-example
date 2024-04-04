@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from src.stock_last_sales.main import calculate_last_sales, get_spark
+from stock_last_sales.main import calculate_last_sales, get_spark
 
 
 # noinspection PyTypeChecker
