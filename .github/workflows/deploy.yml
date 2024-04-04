@@ -25,6 +25,9 @@ jobs:
     name: "Deploy bundle to DEV"
     runs-on: ubuntu-latest
 
+    needs:
+      - test
+
     steps:
       - uses: actions/checkout@v4
       - uses: databricks/setup-cli@main
