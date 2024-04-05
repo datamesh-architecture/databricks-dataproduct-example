@@ -20,6 +20,9 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Test with pytest
         run: pytest
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
   deploy:
     name: "Deploy bundle to DEV"
